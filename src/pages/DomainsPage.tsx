@@ -14,6 +14,7 @@ export default function DomainsPage({ onLogout }: DomainsPageProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [editingDomain, setEditingDomain] = useState<Domain | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [domains, setDomains] = useState<Domain[]>([]);
 
   const fetchDomains = () => {
     setRefreshTrigger((prev) => prev + 1);
@@ -135,6 +136,8 @@ export default function DomainsPage({ onLogout }: DomainsPageProps) {
                 setIsDrawerOpen(true);
               }}
               refreshTrigger={refreshTrigger}
+              domains={domains}
+              setDomains={setDomains}
             />
             
           </div>
@@ -147,6 +150,7 @@ export default function DomainsPage({ onLogout }: DomainsPageProps) {
         onClose={() => setIsDrawerOpen(false)}
         domain={editingDomain}
         onSuccess={fetchDomains}
+        setDomains={setDomains}
       />
     </div>
   );

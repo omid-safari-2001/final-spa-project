@@ -7,10 +7,11 @@ interface DomainsTableProps {
   searchQuery: string;
   onEdit: (domain: Domain) => void;
   refreshTrigger?: number;
+  domains: Domain[];
+  setDomains: React.Dispatch<React.SetStateAction<Domain[]>>;
 }
 
-export default function DomainsTable({ searchQuery, onEdit, refreshTrigger }: DomainsTableProps) {
-  const [domains, setDomains] = useState<Domain[]>([]);
+export default function DomainsTable({ searchQuery, onEdit, refreshTrigger, domains, setDomains }: DomainsTableProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -56,7 +57,8 @@ export default function DomainsTable({ searchQuery, onEdit, refreshTrigger }: Do
     try {
       const response = await domainsService.delete(id);
       if (response.success) {
-        await fetchDomains();
+        setDomains((prev) => prev.filter((item) => item.id !== id));
+        setLoading(false);
       } else {
         setError(response.error?.userErrorText || 'خطا در حذف دامنه. لطفا مجدداً تلاش کنید.');
         setLoading(false);

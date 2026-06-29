@@ -5,10 +5,10 @@ import { authService } from '../features/auth/api/authService';
 import logoHP from '@/assets/images/logo-HP.png';
 
 interface LoginPageProps {
-  onLoginSuccess: () => void;
+  onLogin: () => void;
 }
 
-export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
+export default function LoginPage({ onLogin }: LoginPageProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
@@ -31,9 +31,13 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
     try {
       const response = await authService.login({ username, password });
       if (response.success) {
+        const token = response.data?.token;
+        if (token) {
+          localStorage.setItem('auth_token', token);
+        }
         setSuccess(true);
         setTimeout(() => {
-          onLoginSuccess();
+          onLogin();
         }, 1000);
       } else {
         setError(response.error?.userErrorText || 'نام کاربری یا رمز عبور اشتباه است.');

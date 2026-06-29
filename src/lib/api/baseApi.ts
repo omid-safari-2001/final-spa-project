@@ -24,15 +24,15 @@ axiosInstance.interceptors.request.use(
 export const api = {
   get: async <T>(endpoint: string): Promise<ApiResponse<T>> => {
     try {
-      const res = await axiosInstance.get<T>(endpoint);
-      return { success: true, data: res.data, error: null };
+      const res = await axiosInstance.get<ApiResponse<T>>(endpoint);
+      return res.data;
     } catch (err: any) {
       return {
         success: false,
         data: null as any,
         error: {
           errorCode: err.response?.status || 'API_ERROR',
-          userErrorText: err.response?.data?.message || 'خطا در ارتباط با سرور',
+          userErrorText: err.response?.data?.error?.userErrorText || err.response?.data?.message || 'خطا در ارتباط با سرور',
           developerErrorText: err.message
         }
       };
@@ -41,15 +41,15 @@ export const api = {
 
   post: async <T>(endpoint: string, data?: any): Promise<ApiResponse<T>> => {
     try {
-      const res = await axiosInstance.post<T>(endpoint, data);
-      return { success: true, data: res.data, error: null };
+      const res = await axiosInstance.post<ApiResponse<T>>(endpoint, data);
+      return res.data;
     } catch (err: any) {
       return {
         success: false,
         data: null as any,
         error: {
           errorCode: err.response?.status || 'API_ERROR',
-          userErrorText: err.response?.data?.message || 'خطا در ارتباط با سرور',
+          userErrorText: err.response?.data?.error?.userErrorText || err.response?.data?.message || 'خطا در ارتباط با سرور',
           developerErrorText: err.message
         }
       };
@@ -58,15 +58,15 @@ export const api = {
 
   put: async <T>(endpoint: string, data?: any): Promise<ApiResponse<T>> => {
     try {
-      const res = await axiosInstance.put<T>(endpoint, data);
-      return { success: true, data: res.data, error: null };
+      const res = await axiosInstance.put<ApiResponse<T>>(endpoint, data);
+      return res.data;
     } catch (err: any) {
       return {
         success: false,
         data: null as any,
         error: {
           errorCode: err.response?.status || 'API_ERROR',
-          userErrorText: err.response?.data?.message || 'خطا در ارتباط با سرور',
+          userErrorText: err.response?.data?.error?.userErrorText || err.response?.data?.message || 'خطا در ارتباط با سرور',
           developerErrorText: err.message
         }
       };
@@ -75,15 +75,15 @@ export const api = {
 
   delete: async <T>(endpoint: string): Promise<ApiResponse<T>> => {
     try {
-      const res = await axiosInstance.delete<T>(endpoint);
-      return { success: true, data: res.data, error: null };
+      const res = await axiosInstance.delete<ApiResponse<T>>(endpoint);
+      return res.data;
     } catch (err: any) {
       return {
         success: false,
         data: null as any,
         error: {
           errorCode: err.response?.status || 'API_ERROR',
-          userErrorText: err.response?.data?.message || 'خطا در ارتباط با سرور',
+          userErrorText: err.response?.data?.error?.userErrorText || err.response?.data?.message || 'خطا در ارتباط با سرور',
           developerErrorText: err.message
         }
       };

@@ -2,7 +2,7 @@ import { api } from '../../../lib/api/baseApi';
 import type { ApiResponse } from '../../../lib/api/types';
 import type { Domain } from '../model/types'; // فقط اینترفیس را ایمپورت می‌کنیم
 
-const BASE_URL = 'https://6797aa2bc2c861de0c6d964c.mockapi.io/domain';
+const BASE_URL = '/domains';
 
 export const domainsService = {
   getAll: (): Promise<ApiResponse<Domain[]>> => {

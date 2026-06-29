@@ -20,7 +20,7 @@ function App() {
       {token ? (
         <DomainsPage onLogout={handleLogout} />
       ) : (
-        <LoginPage onLoginSuccess={handleLoginSuccess} />
+        <LoginPage onLogin={handleLoginSuccess} />
       )}
     </>
   );

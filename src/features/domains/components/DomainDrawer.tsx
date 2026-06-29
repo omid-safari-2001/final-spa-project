@@ -8,9 +8,10 @@ interface DomainDrawerProps {
   onClose: () => void;
   domain: Domain | null;
   onSuccess: () => void;
+  setDomains: React.Dispatch<React.SetStateAction<Domain[]>>;
 }
 
-export default function DomainDrawer({ isOpen, onClose, domain, onSuccess }: DomainDrawerProps) {
+export default function DomainDrawer({ isOpen, onClose, domain, onSuccess, setDomains }: DomainDrawerProps) {
   const [mounted, setMounted] = useState(false);
   const [animate, setAnimate] = useState(false);
 
@@ -58,26 +59,45 @@ export default function DomainDrawer({ isOpen, onClose, domain, onSuccess }: Dom
     try {
       let response;
       if (domain) {
-        // Edit Mode
-        response = await domainsService.update(domain.id, {
+        // --- رفع باگ اول (پریدن وضعیت در ویرایش) ---
+        // ما کل اطلاعات قبلیِ دامنه را با ...domain می‌فرستیم تا سرور آنها را پاک نکند!
+        const updatedPayload = {
+          ...domain,
           domain: domainName,
           isActive,
-        });
+        };
+        response = await domainsService.update(domain.id, updatedPayload);
+
+        if (response.success) {
+          // باز هم برای اطمینان، مقادیرِ محلی خودمان را در ریکت قالب می‌کنیم
+          setDomains((prev) =>
+            prev.map((item) => (item.id === response.data!.id ? { ...item, ...response.data, isActive } : item))
+          );
+          onClose();
+        } else {
+          setError(response.error?.userErrorText || 'عملیات با خطا مواجه شد. لطفاً دوباره تلاش کنید.');
+        }
       } else {
-        // Add Mode
-        response = await domainsService.create({
+        // --- رفع باگ دوم (وضعیت فعالیت در افزودن) ---
+        // --- رفع باگ دوم (وضعیت فعالیت در افزودن) ---
+        const newPayload = {
           domain: domainName,
           isActive,
           createdDate: Math.floor(Date.now() / 1000),
-          status: 'pending',
-        });
-      }
+          // با اضافه کردن as const، تایپ‌اسکریپت می‌فهمد که این یک متن معمولی نیست
+          status: 'pending' as const,
+        };
 
-      if (response.success) {
-        onSuccess();
-        onClose();
-      } else {
-        setError(response.error?.userErrorText || 'عملیات با خطا مواجه شد. لطفاً دوباره تلاش کنید.');
+        response = await domainsService.create(newPayload);
+
+        if (response.success) {
+          // دیتای جدیدِ خودمان (newPayload) را با دیتای سرور ادغام می‌کنیم 
+          // تا فیلد isActive تحت هر شرایطی به جدول اضافه شود
+          setDomains((prev) => [{ ...response.data, ...newPayload }, ...prev]);
+          onClose();
+        } else {
+          setError(response.error?.userErrorText || 'عملیات با خطا مواجه شد. لطفاً دوباره تلاش کنید.');
+        }
       }
     } catch (err: any) {
       console.error('Submit domain error:', err);
@@ -91,25 +111,23 @@ export default function DomainDrawer({ isOpen, onClose, domain, onSuccess }: Dom
     <div className="fixed inset-0 z-50 overflow-hidden font-['Vazirmatn',sans-serif]">
       {/* Backdrop with fade-in and blur */}
       <div
-        className={`fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ease-out ${
-          animate ? 'opacity-100' : 'opacity-0'
-        }`}
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ease-out ${animate ? 'opacity-100' : 'opacity-0'
+          }`}
         onClick={onClose}
       />
 
       {/* Slide-out Drawer Panel (Aligned to the Right for RTL) */}
       <div
         dir="rtl"
-        className={`fixed top-0 bottom-0 right-0 w-full max-w-md bg-[#070c19] border-l border-white/10 shadow-2xl flex flex-col transition-transform duration-300 ease-out z-50 ${
-          animate ? 'translate-x-0' : 'translate-x-full'
-        }`}
+        className={`fixed top-0 bottom-0 right-0 w-full max-w-md bg-[#070c19] border-l border-white/10 shadow-2xl flex flex-col transition-transform duration-300 ease-out z-50 ${animate ? 'translate-x-0' : 'translate-x-full'
+          }`}
       >
         {/* Drawer Header */}
         <div className="h-16 px-6 border-b border-white/5 flex items-center justify-between shrink-0">
           <h2 className="text-base font-bold text-slate-100">
             {domain ? 'ویرایش دامنه' : 'افزودن دامنه جدید'}
           </h2>
-          
+
           <button
             type="button"
             onClick={onClose}
@@ -124,7 +142,7 @@ export default function DomainDrawer({ isOpen, onClose, domain, onSuccess }: Dom
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
           {/* Scrollable Form Body */}
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
-            
+
             {/* Error Message Box */}
             {error && (
               <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-start gap-2.5 animate-fadeIn">
@@ -162,14 +180,12 @@ export default function DomainDrawer({ isOpen, onClose, domain, onSuccess }: Dom
                   type="button"
                   onClick={() => setIsActive(!isActive)}
                   disabled={loading}
-                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                    isActive ? 'bg-blue-600' : 'bg-slate-800'
-                  }`}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${isActive ? 'bg-blue-600' : 'bg-slate-800'
+                    }`}
                 >
                   <span
-                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      isActive ? 'translate-x-5' : 'translate-x-0'
-                    }`}
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${isActive ? 'translate-x-5' : 'translate-x-0'
+                      }`}
                   />
                 </button>
               </div>
